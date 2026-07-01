@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Al-Hujurat 13 Quest</title>
+<style>
+:root{
+  --green:#1F8A70; --green-dark:#0E5C46; --yellow:#FFC93C;
+  --orange:#FF7A3D; --cream:#FFF6E5; --blue:#2E86AB;
+  --red:#E84545; --purple:#7B5EA7;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+body{
+  margin:0; font-family:'Trebuchet MS','Comic Sans MS',sans-serif;
+  background:linear-gradient(180deg,#CFF2E1 0%,#FFF6E5 100%);
+  color:#1A3C34; padding-bottom:80px; min-height:100vh;
+}
+header{
+  background:var(--green-dark); color:white; text-align:center;
+  padding:20px 14px 14px; border-bottom:7px solid var(--yellow);
+}
+header h1{margin:0 0 4px; font-size:24px;}
+header p{margin:0; font-size:13px; opacity:.9;}
+
+/* Stage nav */
+.stage-nav{
+  display:flex; justify-content:center; align-items:center;
+  gap:6px; flex-wrap:wrap; padding:12px 10px 4px; max-width:700px; margin:0 auto;
+}
+.stage-dot{
+  width:36px; height:36px; border-radius:50%;
+  background:white; border:3px solid var(--green);
+  color:var(--green-dark); font-weight:bold;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; font-size:14px; transition:.2s; flex-shrink:0;
+}
+.stage-dot.active{background:var(--yellow); border-color:var(--orange);}
+.stage-dot.done{background:var(--green); color:white; border-color:var(--green-dark);}
+.stage-line{flex:1; height:3px; background:#ccc; min-width:16px; max-width:40px; border-radius:2px;}
+.stage-line.done{background:var(--green);}
+
+/* Panels */
+.wrap{max-width:760px; margin:0 auto; padding:16px 14px;}
+.panel{
+  background:white; border-radius:18px;
+  box-shadow:0 6px 0 rgba(0,0,0,.09);
+  padding:20px; margin-bottom:16px; display:none;
+}
+.panel.show{display:block;}
+.panel h2{color:var(--orange); margin-top:0; font-size:20px; border-bottom:3px dashed var(--yellow); padding-bottom:8px;}
+.instr{background:var(--cream); border-radius:12px; padding:12px 14px; font-size:14px; line-height:1.6; margin-bottom:14px;}
+.tip{font-size:12.5px; color:#666; text-align:center; margin-bottom:10px;}
+
+/* Cards */
+.card{
+  cursor:pointer; border-radius:12px;
+  padding:10px 12px; font-weight:bold; font-size:14px;
+  text-align:center; user-select:none;
+  box-shadow:0 4px 0 rgba(0,0,0,.13);
+  transition:transform .1s, box-shadow .1s, opacity .2s;
+  border:3px solid var(--orange); background:var(--yellow); color:#1A3C34;
+  touch-action:none; position:relative;
+}
+.card:hover{transform:translateY(-2px);}
+.card.selected{
+  background:var(--orange); color:white;
+  border-color:var(--green-dark);
+  transform:scale(1.06);
+  box-shadow:0 0 0 4px rgba(255,122,61,.35);
+}
+.card.placed{opacity:.3; cursor:default; transform:none; pointer-events:none;}
+.card.dragging-active{opacity:.4; transform:scale(.96);}
+
+/* Drop zones */
+.dz{
+  min-height:52px; border:3px dashed var(--blue);
+  border-radius:12px; background:#F1FAFD;
+  display:flex; align-items:center; justify-content:center;
+  padding:8px; font-size:13.5px; text-align:center;
+  transition:.15s; cursor:pointer; color:#555;
+}
+.dz:hover{border-color:var(--purple); background:#EEE8FF;}
+.dz.highlight{background:#D6F0FF; border-color:var(--purple); border-style:solid;}
+.dz.filled{border-style:solid; background:#E9FBEF; border-color:var(--green); color:#1A3C34; font-weight:bold; cursor:default;}
+.dz.correct{background:#d4f5e2; border-color:#1a7a4a;}
+.dz.wrong{background:#fde3e3; border-color:var(--red);}
+
+/* Game 1 */
+.match-table{width:100%; border-collapse:separate; border-spacing:0 8px;}
+.match-table td{padding:2px 4px; vertical-align:middle;}
+.match-table td:first-child{width:50%;}
+.meaning-label{
+  background:#EEF8FF; border:2px solid var(--blue);
+  border-radius:10px; padding:10px 10px;
+  font-size:13.5px; min-height:50px;
+  display:flex; align-items:center; justify-content:center; text-align:center;
+}
+.bank{display:flex; flex-wrap:wrap; gap:10px; margin-bottom:16px; justify-content:center;}
+
+/* Game 2 */
+.sort-area{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;}
+.sort-box h3{margin:0 0 8px; text-align:center; font-size:14px; border-radius:8px; padding:7px; color:white;}
+.sort-box.taqwa h3{background:var(--green);}
+.sort-box.tidak h3{background:var(--red);}
+.sort-box .dz{
+  flex-direction:column; min-height:150px; gap:6px;
+  align-items:flex-start; overflow:hidden;
+}
+.sort-box .dz .card{
+  width:100%; font-size:12.5px; padding:7px 8px;
+  pointer-events:none; cursor:default; opacity:1;
+  background:white; border-color:#aaa; color:#333;
+}
+
+/* Game 3 */
+.seq-slots{display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-bottom:14px;}
+.seq-slot{
+  width:160px; min-height:70px;
+  border:3px dashed var(--purple); border-radius:12px;
+  background:#F4F0FB; display:flex; align-items:center; justify-content:center;
+  font-size:12.5px; text-align:center; padding:10px 8px; position:relative;
+  cursor:pointer; transition:.15s; color:#666;
+}
+.seq-slot .num{
+  position:absolute; top:-12px; left:-12px;
+  background:var(--purple); color:white;
+  width:26px; height:26px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:13px; font-weight:bold;
+}
+.seq-slot.highlight{background:#e8dfff; border-color:var(--purple); border-style:solid;}
+.seq-slot.filled{background:#E9FBEF; border-color:var(--green); border-style:solid; color:#1A3C34; font-weight:bold; cursor:default;}
+.seq-slot.correct{background:#d4f5e2; border-color:#1a7a4a;}
+.seq-slot.wrong{background:#fde3e3; border-color:var(--red);}
+
+/* Buttons */
+.btn{
+  background:var(--green); color:white; border:none; border-radius:10px;
+  padding:10px 20px; font-size:15px; font-weight:bold; cursor:pointer;
+  box-shadow:0 4px 0 var(--green-dark);
+  transition:transform .1s, box-shadow .1s;
+}
+.btn:active{transform:translateY(2px); box-shadow:0 2px 0 var(--green-dark);}
+.btn.orange{background:var(--orange); box-shadow:0 4px 0 #C2531C;}
+.btn.orange:active{box-shadow:0 2px 0 #C2531C;}
+.btn.grey{background:#aaa; box-shadow:0 4px 0 #777;}
+.row-end{display:flex; gap:10px; justify-content:center; margin-top:14px; flex-wrap:wrap;}
+
+/* Feedback */
+.feedback{
+  margin-top:12px; padding:10px 14px; border-radius:10px;
+  font-weight:bold; text-align:center; display:none; font-size:14px; line-height:1.5;
+}
+.feedback.ok{display:block; background:#DFF7E3; color:var(--green-dark); border:2px solid var(--green);}
+.feedback.bad{display:block; background:#FDE3E3; color:#A11; border:2px solid var(--red);}
+
+/* Score */
+.scoreboard{
+  position:fixed; top:10px; right:10px; background:white; border-radius:14px;
+  padding:8px 14px; box-shadow:0 4px 10px rgba(0,0,0,.18);
+  font-weight:bold; font-size:14px; color:var(--green-dark); z-index:100;
+}
+
+/* Final */
+.final-stars{font-size:52px; text-align:center; margin:10px 0;}
+.final-msg{text-align:center; font-size:17px; font-weight:bold; color:var(--green-dark); margin-bottom:8px;}
+.ayat-box{
+  background:linear-gradient(135deg,var(--green-dark),var(--green));
+  color:white; border-radius:14px; padding:18px 16px; text-align:center;
+  margin:14px 0; line-height:1.7;
+}
+
+@media(max-width:480px){
+  .sort-area{grid-template-columns:1fr;}
+  .seq-slot{width:140px;}
+}
+</style>
+</head>
+<body>
+
+<div class="scoreboard">⭐ <span id="sv">0</span>&nbsp;/&nbsp;<span id="sm">0</span></div>
+
+<header>
+  <h1>🌍 Al-Hujurat 13 Quest</h1>
+  <p>One Family · Many Colors · One Standard of Honour</p>
+</header>
+
+<div class="stage-nav" id="stageNav"></div>
+
+<div class="wrap">
+
+  <!-- INTRO -->
+  <div class="panel show" id="p0">
+    <h2>👋 Welcome, Taqwa Champion!</h2>
+    <div class="instr">
+      Test your understanding of <b>Surat Al-Hujurat, Ayat 13</b> through 3 fun games!<br><br>
+      🎮 <b>Game 1:</b> Match each Arabic word to its English meaning<br>
+      🎮 <b>Game 2:</b> Sort attitudes — Taqwa or Not Taqwa?<br>
+      🎮 <b>Game 3:</b> Put the ayat's 3 main messages in the correct order<br><br>
+      👆 <b>Tap a card to select it</b>, then tap a box to place it. You can also drag cards on a computer.
+    </div>
+    <div class="row-end"><button class="btn" onclick="go(1)">Let's Play! 🚀</button></div>
+  </div>
+
+  <!-- GAME 1 -->
+  <div class="panel" id="p1">
+    <h2>🎮 Game 1: Match the Words</h2>
+    <div class="instr">
+      <b>Tap a yellow card</b> to select it, then <b>tap the box on the right</b> where it belongs. Match each Arabic word to its English meaning!
+    </div>
+    <table class="match-table" id="g1-table"></table>
+    <div class="bank" id="g1-bank"></div>
+    <div class="feedback" id="g1-fb"></div>
+    <div class="row-end">
+      <button class="btn grey" onclick="resetGame1()">↺ Reset</button>
+      <button class="btn orange" onclick="checkG1()">Check Answers ✅</button>
+      <button class="btn" id="g1-nxt" style="display:none" onclick="go(2)">Game 2 ➡️</button>
+    </div>
+  </div>
+
+  <!-- GAME 2 -->
+  <div class="panel" id="p2">
+    <h2>🎮 Game 2: Sort the Attitudes</h2>
+    <div class="instr">
+      <b>Tap a card</b> to select it, then <b>tap the correct box</b> below — does this attitude show <b>Taqwa</b> (judging by heart &amp; character) or is it <b>Not Taqwa</b> (judging by looks or background)?
+    </div>
+    <div class="bank" id="g2-bank"></div>
+    <div class="sort-area">
+      <div class="sort-box taqwa">
+        <h3>✅ Shows Taqwa</h3>
+        <div class="dz" id="z-taqwa" data-zone="taqwa" onclick="dropG2(this)"></div>
+      </div>
+      <div class="sort-box tidak">
+        <h3>❌ Not Taqwa</h3>
+        <div class="dz" id="z-tidak" data-zone="tidak" onclick="dropG2(this)"></div>
+      </div>
+    </div>
+    <div class="feedback" id="g2-fb"></div>
+    <div class="row-end">
+      <button class="btn grey" onclick="resetGame2()">↺ Reset</button>
+      <button class="btn orange" onclick="checkG2()">Check Answers ✅</button>
+      <button class="btn" id="g2-nxt" style="display:none" onclick="go(3)">Game 3 ➡️</button>
+    </div>
+  </div>
+
+  <!-- GAME 3 -->
+  <div class="panel" id="p3">
+    <h2>🎮 Game 3: Order the Messages</h2>
+    <div class="instr">
+      Surat Al-Hujurat Ayat 13 has <b>3 main messages</b>. <b>Tap a card</b> then <b>tap a numbered box</b> to place it in the correct order (1 → 2 → 3) as it appears in the ayat.
+    </div>
+    <div class="seq-slots" id="g3-slots"></div>
+    <div class="bank" id="g3-bank"></div>
+    <div class="feedback" id="g3-fb"></div>
+    <div class="row-end">
+      <button class="btn grey" onclick="resetGame3()">↺ Reset</button>
+      <button class="btn orange" onclick="checkG3()">Check Answers ✅</button>
+      <button class="btn" id="g3-nxt" style="display:none" onclick="go(4)">See Results 🏆</button>
+    </div>
+  </div>
+
+  <!-- FINAL -->
+  <div class="panel" id="p4">
+    <h2>🏆 Final Result</h2>
+    <div class="final-stars" id="fStars">⭐⭐⭐</div>
+    <div class="final-msg" id="fMsg"></div>
+    <div class="ayat-box">
+      "Indeed, the most honoured of you in the sight of Allah is the one with the most taqwa among you."<br>
+      <b>— QS. Al-Hujurat: 13</b>
+    </div>
+    <div class="instr" style="text-align:center;">
+      Jazakumullahu khairan — thank you for learning today! 🌟<br>
+      Remember: in Islam, greatness is never about your tribe, language, or background.
+    </div>
+    <div class="row-end"><button class="btn" onclick="resetAll()">Play Again 🔄</button></div>
+  </div>
+
+</div>
+
+<script>
+/* ── Stage Nav ─────────────────────────────────────────── */
+let stage = 0, unlocked = 0;
+const labels = ['🏠','1','2','3','🏆'];
+const navEl = document.getElementById('stageNav');
+const dots = [], lines = [];
+labels.forEach((lbl,i)=>{
+  const d = document.createElement('div');
+  d.className='stage-dot'; d.textContent=lbl;
+  d.onclick=()=>{ if(i<=unlocked) go(i); };
+  navEl.appendChild(d); dots.push(d);
+  if(i<labels.length-1){
+    const l=document.createElement('div');
+    l.className='stage-line'; navEl.appendChild(l); lines.push(l);
+  }
+});
+function renderNav(){
+  dots.forEach((d,i)=>{
+    d.classList.toggle('active', i===stage);
+    d.classList.toggle('done', i<stage);
+  });
+  lines.forEach((l,i)=> l.classList.toggle('done', i<stage));
+}
+function go(n){
+  stage=n; if(n>unlocked) unlocked=n;
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('show'));
+  document.getElementById('p'+n).classList.add('show');
+  renderNav();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+renderNav();
+
+/* ── Score ─────────────────────────────────────────────── */
+let score=0, maxScore=0;
+const scored={g1:false,g2:false,g3:false};
+function addScore(pts,max,key){
+  maxScore+=max;
+  if(!scored[key]){ score+=pts; scored[key]=true; }
+  document.getElementById('sv').textContent=score;
+  document.getElementById('sm').textContent=maxScore;
+}
+
+/* ── Selection state ───────────────────────────────────── */
+let selected=null; // {id, text, source} 
+function clearSelected(){
+  document.querySelectorAll('.card.selected').forEach(c=>c.classList.remove('selected'));
+  selected=null;
+}
+
+/* ── Drag support (desktop) ────────────────────────────── */
+function enableDrag(el){
+  el.setAttribute('draggable','true');
+  el.addEventListener('dragstart',e=>{
+    e.dataTransfer.setData('text/plain',el.dataset.id);
+    setTimeout(()=>el.classList.add('dragging-active'),0);
+  });
+  el.addEventListener('dragend',()=>el.classList.remove('dragging-active'));
+}
+
+/* ═══════════════════════════════════════════════════════
+   GAME 1 – Word Matching
+═══════════════════════════════════════════════════════ */
+const G1 = [
+  {id:'a', term:'Khalaqnakum',      meaning:'We created you'},
+  {id:'b', term:"Shu'uban wa qaba'il", meaning:'Nations and tribes'},
+  {id:'c', term:"Lita'arafu",       meaning:'So that you may know one another'},
+  {id:'d', term:'Atqakum',          meaning:'The most righteous among you'},
+];
+let g1Place={};    // targetId → cardId
+let g1Built=false;
+
+function buildG1(){
+  g1Place={}; clearSelected();
+  const tbl=document.getElementById('g1-table');
+  const bank=document.getElementById('g1-bank');
+  tbl.innerHTML=''; bank.innerHTML='';
+  const shuffled=[...G1].sort(()=>Math.random()-.5);
+
+  // Build drop zones in table
+  G1.forEach(item=>{
+    const tr=document.createElement('tr');
+    // meaning column
+    const td1=document.createElement('td');
+    const ml=document.createElement('div');
+    ml.className='meaning-label'; ml.textContent=item.meaning;
+    td1.appendChild(ml); tr.appendChild(td1);
+    // drop zone column
+    const td2=document.createElement('td');
+    const dz=document.createElement('div');
+    dz.className='dz'; dz.id='g1z-'+item.id;
+    dz.dataset.target=item.id;
+    dz.textContent='tap to place';
+    dz.onclick=()=>dropG1(dz, item.id);
+    // drag over
+    dz.addEventListener('dragover',e=>{ e.preventDefault(); dz.classList.add('highlight'); });
+    dz.addEventListener('dragleave',()=>dz.classList.remove('highlight'));
+    dz.addEventListener('drop',e=>{
+      e.preventDefault(); dz.classList.remove('highlight');
+      const cid=e.dataTransfer.getData('text/plain');
+      dropG1(dz, item.id, cid);
+    });
+    td2.appendChild(dz); tr.appendChild(td2);
+    tbl.appendChild(tr);
+  });
+
+  // Build cards in bank
+  shuffled.forEach(item=>{
+    const c=document.createElement('div');
+    c.className='card'; c.dataset.id=item.id; c.textContent=item.term;
+    c.onclick=()=>selectG1(c);
+    enableDrag(c);
+    bank.appendChild(c);
+  });
+  g1Built=true;
+}
+
+function selectG1(card){
+  if(card.classList.contains('placed')) return;
+  if(selected && selected.id===card.dataset.id){ clearSelected(); return; }
+  clearSelected();
+  card.classList.add('selected');
+  selected={id:card.dataset.id, text:card.textContent};
+  // Highlight all empty zones
+  document.querySelectorAll('#g1-table .dz:not(.filled)').forEach(z=>z.classList.add('highlight'));
+}
+
+function dropG1(dz, targetId, cardId){
+  const cid = cardId || (selected ? selected.id : null);
+  if(!cid) return;
+  if(dz.classList.contains('filled')){ clearSelected(); return; }
+  const card = document.querySelector('#g1-bank .card[data-id="'+cid+'"]');
+  if(!card || card.classList.contains('placed')){ clearSelected(); return; }
+  dz.textContent = card.textContent;
+  dz.classList.add('filled');
+  dz.classList.remove('highlight');
+  card.classList.add('placed');
+  g1Place[targetId]=cid;
+  clearSelected();
+  document.querySelectorAll('#g1-table .dz').forEach(z=>z.classList.remove('highlight'));
+}
+
+function checkG1(){
+  if(!g1Built) return;
+  let correct=0;
+  G1.forEach(item=>{
+    const dz=document.getElementById('g1z-'+item.id);
+    const isCorrect = g1Place[item.id]===item.id;
+    if(isCorrect){ correct++; dz.classList.add('correct'); }
+    else if(g1Place[item.id]){ dz.classList.add('wrong'); }
+  });
+  const fb=document.getElementById('g1-fb');
+  const pts = Math.round((correct/G1.length)*10);
+  addScore(pts,10,'g1');
+  if(correct===G1.length){
+    fb.className='feedback ok';
+    fb.textContent='🎉 Perfect! All '+G1.length+' words matched correctly! (+'+pts+' points)';
+  } else {
+    fb.className='feedback bad';
+    fb.textContent='🤔 '+correct+' out of '+G1.length+' correct. The green boxes are right, red are wrong. Try resetting and having another go!';
+  }
+  document.getElementById('g1-nxt').style.display='inline-block';
+}
+function resetGame1(){
+  document.getElementById('g1-fb').className='feedback';
+  document.getElementById('g1-nxt').style.display='none';
+  buildG1();
+}
+buildG1();
+
+/* ═══════════════════════════════════════════════════════
+   GAME 2 – Attitude Sorting
+═══════════════════════════════════════════════════════ */
+const G2=[
+  {id:'s1', text:'Respecting a classmate because they are honest and pray regularly',            cat:'taqwa'},
+  {id:'s2', text:'Teasing a classmate from Medan because of their accent',                      cat:'tidak'},
+  {id:'s3', text:'Being friends with anyone, whatever island of Indonesia they are from',       cat:'taqwa'},
+  {id:'s4', text:'Assuming a classmate from a village is "less smart"',                        cat:'tidak'},
+  {id:'s5', text:'Praising someone only because they wear expensive clothes',                  cat:'tidak'},
+  {id:'s6', text:'Inviting a new student from Papua to join your game at recess',              cat:'taqwa'},
+];
+let g2Place={}; // cardId → zone
+
+function buildG2(){
+  g2Place={}; clearSelected();
+  const bank=document.getElementById('g2-bank');
+  bank.innerHTML='';
+  document.getElementById('z-taqwa').innerHTML='';
+  document.getElementById('z-tidak').innerHTML='';
+  document.getElementById('z-taqwa').classList.remove('filled');
+  document.getElementById('z-tidak').classList.remove('filled');
+  const shuffled=[...G2].sort(()=>Math.random()-.5);
+  shuffled.forEach(item=>{
+    const c=document.createElement('div');
+    c.className='card'; c.dataset.id=item.id; c.textContent=item.text;
+    c.style.maxWidth='220px';
+    c.onclick=()=>selectG2(c);
+    enableDrag(c);
+    bank.appendChild(c);
+    // drag onto sort zones
+    ['z-taqwa','z-tidak'].forEach(zid=>{
+      const z=document.getElementById(zid);
+      z.addEventListener('dragover',e=>{ e.preventDefault(); z.classList.add('highlight'); });
+      z.addEventListener('dragleave',()=>z.classList.remove('highlight'));
+      z.addEventListener('drop',e=>{
+        e.preventDefault(); z.classList.remove('highlight');
+        const cid=e.dataTransfer.getData('text/plain');
+        placeG2(cid, z);
+      });
+    });
+  });
+}
+
+function selectG2(card){
+  if(card.classList.contains('placed')) return;
+  if(selected && selected.id===card.dataset.id){ clearSelected(); return; }
+  clearSelected();
+  card.classList.add('selected');
+  selected={id:card.dataset.id, text:card.textContent};
+  document.querySelectorAll('.sort-box .dz').forEach(z=>z.classList.add('highlight'));
+}
+
+function dropG2(zone){
+  const cid=selected ? selected.id : null;
+  if(!cid) return;
+  placeG2(cid, zone);
+  clearSelected();
+}
+
+function placeG2(cid, zone){
+  const card=document.querySelector('#g2-bank .card[data-id="'+cid+'"]');
+  if(!card || card.classList.contains('placed')) return;
+  const clone=document.createElement('div');
+  clone.className='card'; clone.textContent=card.textContent;
+  zone.appendChild(clone); zone.classList.add('filled');
+  zone.classList.remove('highlight');
+  card.classList.add('placed');
+  g2Place[cid]=zone.dataset.zone;
+  clearSelected();
+  document.querySelectorAll('.sort-box .dz').forEach(z=>z.classList.remove('highlight'));
+}
+
+function checkG2(){
+  let correct=0;
+  G2.forEach(item=>{ if(g2Place[item.id]===item.cat) correct++; });
+  const fb=document.getElementById('g2-fb');
+  const pts=Math.round((correct/G2.length)*10);
+  addScore(pts,10,'g2');
+  if(correct===G2.length){
+    fb.className='feedback ok';
+    fb.textContent='🎉 Excellent! All '+G2.length+' attitudes sorted correctly! (+'+pts+' points)';
+  } else {
+    fb.className='feedback bad';
+    fb.textContent='🤔 '+correct+' out of '+G2.length+' correct. Remember — taqwa means judging by heart and actions, not looks! Try resetting.';
+  }
+  document.getElementById('g2-nxt').style.display='inline-block';
+}
+function resetGame2(){
+  document.getElementById('g2-fb').className='feedback';
+  document.getElementById('g2-nxt').style.display='none';
+  buildG2();
+}
+buildG2();
+
+/* ═══════════════════════════════════════════════════════
+   GAME 3 – Sequence
+═══════════════════════════════════════════════════════ */
+const G3=[
+  {id:'m1', order:1, text:'All humans were created from one origin — Adam and Hawa'},
+  {id:'m2', order:2, text:'Allah made us into different nations and tribes so we may know one another'},
+  {id:'m3', order:3, text:'The most honoured person in Allah\'s sight is the one with the most taqwa'},
+];
+let g3Place={}; // slot number → cardId
+
+function buildG3(){
+  g3Place={}; clearSelected();
+  const slots=document.getElementById('g3-slots');
+  const bank=document.getElementById('g3-bank');
+  slots.innerHTML=''; bank.innerHTML='';
+
+  for(let i=1;i<=3;i++){
+    const s=document.createElement('div');
+    s.className='seq-slot'; s.dataset.slot=i;
+    const num=document.createElement('div');
+    num.className='num'; num.textContent=i; s.appendChild(num);
+    const txt=document.createElement('span');
+    txt.textContent='tap to place'; s.appendChild(txt);
+    s.onclick=(()=>{ const si=i,ti=txt; return ()=>dropG3(s,si,ti); })();
+    s.addEventListener('dragover',e=>{ e.preventDefault(); s.classList.add('highlight'); });
+    s.addEventListener('dragleave',()=>s.classList.remove('highlight'));
+    s.addEventListener('drop',e=>{
+      e.preventDefault(); s.classList.remove('highlight');
+      const cid=e.dataTransfer.getData('text/plain');
+      const ti=s.querySelector('span');
+      dropG3(s,i,ti,cid);
+    });
+    slots.appendChild(s);
+  }
+
+  const shuffled=[...G3].sort(()=>Math.random()-.5);
+  shuffled.forEach(item=>{
+    const c=document.createElement('div');
+    c.className='card seq-card'; c.style.maxWidth='200px';
+    c.dataset.id=item.id; c.textContent=item.text;
+    c.onclick=()=>selectG3(c);
+    enableDrag(c);
+    bank.appendChild(c);
+  });
+}
+
+function selectG3(card){
+  if(card.classList.contains('placed')) return;
+  if(selected && selected.id===card.dataset.id){ clearSelected(); return; }
+  clearSelected();
+  card.classList.add('selected');
+  selected={id:card.dataset.id, text:card.textContent};
+  document.querySelectorAll('.seq-slot:not(.filled)').forEach(s=>s.classList.add('highlight'));
+}
+
+function dropG3(slot, pos, txtEl, cardId){
+  const cid=cardId||(selected ? selected.id : null);
+  if(!cid) return;
+  if(slot.classList.contains('filled')){ clearSelected(); return; }
+  const card=document.querySelector('#g3-bank .card[data-id="'+cid+'"]');
+  if(!card || card.classList.contains('placed')){ clearSelected(); return; }
+  txtEl.textContent=card.textContent;
+  slot.classList.add('filled'); slot.classList.remove('highlight');
+  card.classList.add('placed');
+  g3Place[pos]=cid;
+  clearSelected();
+  document.querySelectorAll('.seq-slot').forEach(s=>s.classList.remove('highlight'));
+}
+
+function checkG3(){
+  let correct=0;
+  G3.forEach(item=>{
+    const slot=document.querySelector('.seq-slot[data-slot="'+item.order+'"]');
+    const ok=g3Place[item.order]===item.id;
+    if(ok){ correct++; slot.classList.add('correct'); }
+    else if(g3Place[item.order]){ slot.classList.add('wrong'); }
+  });
+  const fb=document.getElementById('g3-fb');
+  const pts=Math.round((correct/G3.length)*10);
+  addScore(pts,10,'g3');
+  if(correct===G3.length){
+    fb.className='feedback ok';
+    fb.textContent='🎉 Perfect order! You know the ayat\'s messages really well! (+'+pts+' points)';
+  } else {
+    fb.className='feedback bad';
+    fb.textContent='🤔 '+correct+' out of '+G3.length+' in the right place. Green = correct, red = wrong. Try resetting!';
+  }
+  document.getElementById('g3-nxt').style.display='inline-block';
+  showFinal();
+}
+function resetGame3(){
+  document.getElementById('g3-fb').className='feedback';
+  document.getElementById('g3-nxt').style.display='none';
+  buildG3();
+}
+buildG3();
+
+/* ── Final ─────────────────────────────────────────────── */
+function showFinal(){
+  const pct=maxScore>0 ? score/maxScore : 0;
+  let stars='⭐', msg='Keep trying — you\'ll fill up all the stars!';
+  if(pct>=.99){ stars='⭐⭐⭐'; msg='Mashaa Allah! You are the Al-Hujurat 13 Champion! 🏅'; }
+  else if(pct>=.65){ stars='⭐⭐'; msg='Great work! A little more practice and you\'ll ace it! 💪'; }
+  document.getElementById('fStars').textContent=stars;
+  document.getElementById('fMsg').textContent=msg+'   (Score: '+score+'/'+maxScore+')';
+}
+
+/* ── Reset All ─────────────────────────────────────────── */
+function resetAll(){
+  score=0; maxScore=0; scored.g1=false; scored.g2=false; scored.g3=false;
+  document.getElementById('sv').textContent=0;
+  document.getElementById('sm').textContent=0;
+  ['g1-fb','g2-fb','g3-fb'].forEach(id=>{
+    const el=document.getElementById(id); el.className='feedback'; el.textContent='';
+  });
+  ['g1-nxt','g2-nxt','g3-nxt'].forEach(id=>document.getElementById(id).style.display='none');
+  clearSelected(); unlocked=0; buildG1(); buildG2(); buildG3(); go(0);
+}
+
+/* ── Close selection if tapping blank space ───────────── */
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.card') && !e.target.closest('.dz') && !e.target.closest('.seq-slot')){
+    clearSelected();
+  }
+});
+</script>
+</body>
+</html>
